@@ -3,17 +3,18 @@
 #include <fstream>
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
+#include "colored-cout.h"
 
-void printSeparatorWithText(std::string text)
+void printSeparatorWithText(std::string& text)
 {
-	std::cout << "=====================[" << text << "]=====================" << '\n';
+	std::cout << clr::cyan << "=====================[" << text << "]=====================" << '\n';
 }
 
 void printFolderContents(std::string folderPath)
 {
 	for (const auto& entry : std::filesystem::directory_iterator(folderPath))
 	{
-		std::cout << entry.path().filename().string() << '\n';
+		std::cout << clr::blue << entry.path().filename().string() << '\n';
 	}
 }
 
@@ -57,7 +58,7 @@ std::string getNameFromAppID(unsigned long appID)
 	return appName;
 }
 
-std::string getNewNameForGameName(std::string gameName, std::filesystem::path gamePath)
+std::string getNewNameForGameName(std::string& gameName, std::filesystem::path& gamePath)
 {
 	std::string newGameName {};
 
@@ -71,7 +72,7 @@ std::string getNewNameForGameName(std::string gameName, std::filesystem::path ga
 		printFolderContents(gamePath.string() + "/users/steamuser/" + folders[i]);
 	}
 
-	std::cout << "Game name? (If you couldn't identify it, type 'N', yazi will open: ";
+	std::cout << clr::white << "Game name? (If you couldn't identify it, type 'N', yazi will open: ";
 	std::getline(std::cin, newGameName);
 
 	if (newGameName == "N")
@@ -79,7 +80,7 @@ std::string getNewNameForGameName(std::string gameName, std::filesystem::path ga
 		std::string command {"yazi " + gamePath.string() + "/users/steamuser"};
 		system(command.c_str());
 
-		std::cout << "Game name?: ";
+		std::cout << clr::white << "Game name?: ";
 		std::getline(std::cin, newGameName);
 
 		return newGameName;
@@ -87,7 +88,7 @@ std::string getNewNameForGameName(std::string gameName, std::filesystem::path ga
 	return newGameName;
 }
 
-void addNameToJson(std::string gameID, std::string gameName)
+void addNameToJson(std::string& gameID, std::string& gameName)
 {
 	nlohmann::json temp;
 
@@ -113,7 +114,7 @@ void createSymlinks(std::filesystem::path& pfx, std::filesystem::path& create)
 	{
 		for (const auto& entry : std::filesystem::directory_iterator(pfx))
 		{
-			std::cout << "Processing " << entry.path().filename().string() << '\n';
+			std::cout << clr::white << "Processing " << entry.path().filename().string() << '\n';
 			std::string gameName {getNameFromAppID(stoul(entry.path().filename().string()))};
 
 			std::filesystem::path gamePath {entry.path().string() + "/pfx/drive_c"};
@@ -123,8 +124,8 @@ void createSymlinks(std::filesystem::path& pfx, std::filesystem::path& create)
 			{
 				if (!std::all_of(gameName.begin(), gameName.end(), isdigit)) //gameName is an actual game from Steam, doesn't require any intervention
 				{
-					std::cout << "Creating folder for " << gameName << '\n';
 					std::filesystem::create_directory_symlink(gamePath, symLinkPath);
+					std::cout << clr::green << "Created folder for " << gameName << '\n';
 				}
 				else //gameName is only digits, so user must specify a name for them, unless they already exist on json file
 				{
@@ -134,7 +135,7 @@ void createSymlinks(std::filesystem::path& pfx, std::filesystem::path& create)
 					std::string newGameName {};
 					if (!jsonNames[gameName].empty())
 					{
-						std::cout << gameName << " is already on json file as " << jsonNames[gameName]["name"] << '\n';
+						std::cout << clr::yellow << gameName << " is already on json file as " << jsonNames[gameName]["name"] << '\n';
 						newGameName = jsonNames[gameName]["name"];
 					}
 					else
@@ -146,8 +147,8 @@ void createSymlinks(std::filesystem::path& pfx, std::filesystem::path& create)
 					symLinkPath = create.string() + newGameName;
 					if (!std::filesystem::exists(symLinkPath))
 					{
-						std::cout << "Creating folder for " << newGameName << '\n';
 						std::filesystem::create_directory_symlink(gamePath, symLinkPath);
+						std::cout << clr::green << "Created folder for " << newGameName << '\n';
 					}
 				}
 			}

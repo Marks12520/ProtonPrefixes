@@ -49,6 +49,14 @@ void createSymlinks(std::filesystem::path& pfx, std::filesystem::path& create)
 					}
 				}
 			}
+			else if (gameName != "invalid")
+			{
+				std::cout << clr::gray << "Folder for this game already exists\n";
+			}
+			else
+			{
+				std::cout << clr::red << "This is not a game, it's probably a Proton version\n";
+			}
 
 			std::cout << '\n';
 		}

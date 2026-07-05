@@ -26,7 +26,7 @@ void createSymlinks(std::filesystem::path& pfx, std::filesystem::path& create)
 				}
 				else //gameName is only digits, so user must specify a name for them, unless they already exist on json file
 				{
-					std::ifstream jsonFile {"nonsteam.json"};
+					std::ifstream jsonFile {"games.json"};
 					auto jsonNames = nlohmann::json::parse(jsonFile);
 
 					std::string newGameName {};
@@ -65,10 +65,10 @@ void createSymlinks(std::filesystem::path& pfx, std::filesystem::path& create)
 
 int main()
 {
-	if (!std::filesystem::exists(std::filesystem::current_path().string() + "/nonsteam.json"))
+	if (!std::filesystem::exists(std::filesystem::current_path().string() + "/games.json"))
 	{
-		system("touch nonsteam.json");
-		system("echo '{}' > nonsteam.json");
+		system("touch games.json");
+		system("echo '{}' > games.json");
 	}
 
 	std::filesystem::path pfxC {"/home/marcos/.steam/steam/steamapps/compatdata"};

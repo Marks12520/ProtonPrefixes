@@ -1,5 +1,6 @@
 #include "names.h"
 #include <iostream>
+#include <fstream>
 #include <nlohmann/json.hpp>
 #include <cpr/cpr.h>
 #include "utils.h"
@@ -10,6 +11,16 @@ std::string getNameFromAppID(unsigned long appID)
 	std::string apiKey {"C4A3344741D6DC0DF379A97E9B3E83D3"};
 	std::string url {"https://api.steampowered.com/IStoreService/GetAppList/v1/"};
 	std::string appName {};
+
+	std::ifstream jsonFile {"games.json"};
+	auto jsonNames = nlohmann::json::parse(jsonFile);
+	std::string appIDstr {std::to_string(appID)};
+
+	if (!jsonNames[appIDstr]["name"].empty())
+	{
+		std::cout << clr::yellow << appIDstr << " is already on json file as " << jsonNames[appIDstr]["name"] << '\n';
+		return jsonNames[appIDstr]["name"];
+	}
 
 	auto response = cpr::Get(
 		cpr::Url{url},
@@ -30,6 +41,7 @@ std::string getNameFromAppID(unsigned long appID)
 			if (jsonResponse["response"]["apps"][0]["appid"] == appID)
 			{
 				appName = jsonResponse["response"]["apps"][0]["name"];
+				addNameToJson(appIDstr, appName);
 			}
 			else
 			{
@@ -79,7 +91,7 @@ void addNameToJson(std::string& gameID, std::string& gameName)
 {
 	nlohmann::json temp;
 
-	std::ifstream readJsonFile {"nonsteam.json"};
+	std::ifstream readJsonFile {"games.json"};
 	if (readJsonFile.is_open())
 	{
 		readJsonFile >> temp;
@@ -87,7 +99,7 @@ void addNameToJson(std::string& gameID, std::string& gameName)
 	}
 
 	temp[gameID]["name"] = gameName;
-	std::ofstream writeJsonFile {"nonsteam.json"};
+	std::ofstream writeJsonFile {"games.json"};
 	if (writeJsonFile.is_open())
 	{
 		writeJsonFile << temp.dump(4);

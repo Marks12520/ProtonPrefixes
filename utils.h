@@ -5,4 +5,4 @@
 void printSeparatorWithText(std::string& text);
 void printFolderContents(std::string folderPath);
 
-#endif //PROTONPREFIXES_UTILS_H
+#endif // PROTONPREFIXES_UTILS_H

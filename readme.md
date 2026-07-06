@@ -11,8 +11,11 @@ This is a tool to help you identify which proton prefix is which, using symlinks
 # Building
 ## Requirements
 - CMake
+- Clang
+- Meson
 - Ninja
 ```shell
+git clone https://github.com/Marks12520/ProtonPrefixes.git --recursive
 cmake -B build -S . -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
 cmake --build build/
 ```

@@ -8,7 +8,7 @@ set(CPR_USE_SYSTEM_CURL ON)
 add_subdirectory(external/json)
 add_subdirectory(external/cpr)
 
-add_executable(ProtonPrefixes 
+add_executable(ProtonPrefixes
         src/main.cpp
         src/colored-cout.h
         src/utils.cpp
@@ -16,6 +16,4 @@ add_executable(ProtonPrefixes
         src/names.cpp
         src/names.h)
 
-target_link_libraries(ProtonPrefixes PRIVATE 
-cpr::cpr 
-nlohmann_json::nlohmann_json)
+target_link_libraries(ProtonPrefixes PRIVATE cpr::cpr nlohmann_json::nlohmann_json)

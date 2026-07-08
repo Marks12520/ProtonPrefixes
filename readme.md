@@ -1,5 +1,6 @@
 # Requirements
 - Yazi
+- [Steam API key](https://steamcommunity.com/dev/apikey)
 
 # What is this?
 This is a tool to help you identify which proton prefix is which, using symlinks to create folders with the game's name.
@@ -11,14 +12,14 @@ This is a tool to help you identify which proton prefix is which, using symlinks
 # Building
 ## Requirements (Most packages should already be on your system)
 - CMake
-- Clang
 - Curl
 - Libpsl
 - Ninja
+
 ```shell
 git clone https://github.com/Marks12520/ProtonPrefixes.git --recursive
 cd ProtonPrefixes
-cmake -B build -S . -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+cmake -B build -S . -G Ninja
 cmake --build build/
 ```
 

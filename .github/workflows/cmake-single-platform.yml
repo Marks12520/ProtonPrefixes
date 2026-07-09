@@ -24,6 +24,10 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Install libcurl
+      run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+
+
     - name: actions-setup-cmake
       uses: jwlawson/actions-setup-cmake@v2.0.2
       with:

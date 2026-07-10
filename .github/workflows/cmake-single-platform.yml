@@ -24,7 +24,6 @@ jobs:
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev clang ninja-build
 
-
     - name: actions-setup-cmake
       uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
@@ -44,6 +43,10 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}}
 
     - name: Publish release
-      
-
-
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+      run: |
+        gh release create "$TAG" \
+          --title "Release $TAG" \
+          --generate-notes

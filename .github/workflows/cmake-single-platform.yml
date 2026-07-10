@@ -49,4 +49,5 @@ jobs:
       run: |
         gh release create "$TAG" \
           --title "Release $TAG" \
-          --generate-notes
+          --generate-notes \
+          ./build/ProtonPrefixes

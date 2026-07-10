@@ -8,17 +8,15 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 
-std::string getNameFromAppID(unsigned long appID)
+std::string getNameFromAppID(unsigned long appID, std::filesystem::path& gamePath)
 {
     std::string apiKey{""};
     std::string url{"https://api.steampowered.com/IStoreService/GetAppList/v1/"};
     std::string appName{};
 
-    std::ifstream apiFile{"api.txt"};
-    apiFile >> apiKey;
-
     std::ifstream jsonFile{"games.json"};
     auto jsonNames = nlohmann::json::parse(jsonFile);
+    apiKey = jsonNames["api"];
     std::string appIDstr{std::to_string(appID)};
 
     if (!jsonNames[appIDstr]["name"].empty())
@@ -42,28 +40,39 @@ std::string getNameFromAppID(unsigned long appID)
 
         if (!jsonResponse["response"]["apps"].empty())
         {
-            if (jsonResponse["response"]["apps"][0]["appid"] == appID)
+            if (jsonResponse["response"]["apps"][0]["appid"] == appID) // App exists on steam
             {
                 appName = jsonResponse["response"]["apps"][0]["name"];
-                addNameToJson(appIDstr, appName);
+                std::string path{"/" + appIDstr + "/name"};
+                writeToJson(path, appName);
             }
-            else
+            else // ID doesn't exist on steam, so it sends the next valid one, which we don't want
             {
                 appName = "invalid";
             }
         }
-        else
+        else // This ID can't correspond to any steam game
         {
-            appName = std::to_string(appID);
+            appName = getNewName(appIDstr, gamePath);
+            std::string path{"/" + appIDstr + "/name"};
+            writeToJson(path, appName);
         }
     }
 
     return appName;
 }
 
-std::string getNewNameForGameName(std::string& gameName, std::filesystem::path& gamePath)
+std::string getNewName(std::string& gameName, std::filesystem::path& gamePath)
 {
     std::string newGameName{};
+
+    std::ifstream readJsonFile{"games.json"};
+    auto jsonNames = nlohmann::json::parse(readJsonFile);
+    if (!jsonNames[gameName]["name"].empty())
+    {
+        std::cout << clr::yellow << gameName << " is already on json file as " << jsonNames[gameName]["name"] << '\n';
+        return jsonNames[gameName]["name"];
+    }
 
     std::cout << gameName << " is not on Steam, so you must specify a name for it\n";
     std::cout << "Folders that might help identify the game: \n";
@@ -89,24 +98,4 @@ std::string getNewNameForGameName(std::string& gameName, std::filesystem::path& 
         return newGameName;
     }
     return newGameName;
-}
-
-void addNameToJson(std::string& gameID, std::string& gameName)
-{
-    nlohmann::json temp;
-
-    std::ifstream readJsonFile{"games.json"};
-    if (readJsonFile.is_open())
-    {
-        readJsonFile >> temp;
-        readJsonFile.close();
-    }
-
-    temp[gameID]["name"] = gameName;
-    std::ofstream writeJsonFile{"games.json"};
-    if (writeJsonFile.is_open())
-    {
-        writeJsonFile << temp.dump(4);
-        writeJsonFile.close();
-    }
 }

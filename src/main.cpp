@@ -1,10 +1,32 @@
 #include "colored-cout.h"
 #include "names.h"
+#include "utils.h"
 
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
+
+void setup()
+{
+    if (!std::filesystem::exists(std::filesystem::current_path().string() + "/games.json"))
+    {
+        system("echo '{}' > games.json");
+    }
+
+    std::ifstream readJson{"games.json"};
+    auto jsonData = nlohmann::json::parse(readJson);
+    if (jsonData["api"].empty())
+    {
+        std::cout << clr::red << "Enter your Steam API key: ";
+        std::string key{};
+        std::cin >> key;
+        std::string path{"/api"};
+        writeToJson(path, key);
+        std::cout << clr::red << "Key saved. Please, run the program again";
+        std::exit(0);
+    }
+}
 
 void createSymlinks(std::filesystem::path& pfx, std::filesystem::path& create)
 {
@@ -13,47 +35,18 @@ void createSymlinks(std::filesystem::path& pfx, std::filesystem::path& create)
         for (const auto& entry : std::filesystem::directory_iterator(pfx))
         {
             std::cout << clr::white << "Processing " << entry.path().filename().string() << '\n';
-            std::string gameName{getNameFromAppID(stoul(entry.path().filename().string()))};
-
             std::filesystem::path gamePath{entry.path().string() + "/pfx/drive_c"};
-            std::filesystem::path symLinkPath{create.string() + gameName};
+            std::string gameName{getNameFromAppID(stoul(entry.path().filename().string()), gamePath)};
+            std::filesystem::path symlinkPath{create.string() + gameName};
 
-            if (gameName != "invalid" && std::filesystem::exists(gamePath) &&
-                !std::filesystem::exists(symLinkPath))
+            if (gameName != "invalid" && !std::filesystem::exists(symlinkPath))
             {
-                if (!std::all_of(gameName.begin(), gameName.end(), isdigit)) // gameName is an actual game from Steam, doesn't require any intervention
-                {
-                    std::filesystem::create_directory_symlink(gamePath, symLinkPath);
-                    std::cout << clr::green << "Created folder for " << gameName << '\n';
-                }
-                else // gameName is only digits, so user must specify a name for them, unless they already exist on json file
-                {
-                    std::ifstream jsonFile{"games.json"};
-                    auto jsonNames = nlohmann::json::parse(jsonFile);
-
-                    std::string newGameName{};
-                    if (!jsonNames[gameName].empty())
-                    {
-                        std::cout << clr::yellow << gameName << " is already on json file as " << jsonNames[gameName]["name"] << '\n';
-                        newGameName = jsonNames[gameName]["name"];
-                    }
-                    else
-                    {
-                        newGameName = getNewNameForGameName(gameName, gamePath);
-                        addNameToJson(gameName, newGameName);
-                    }
-
-                    symLinkPath = create.string() + newGameName;
-                    if (!std::filesystem::exists(symLinkPath))
-                    {
-                        std::filesystem::create_directory_symlink(gamePath, symLinkPath);
-                        std::cout << clr::green << "Created folder for " << newGameName << '\n';
-                    }
-                }
+                std::filesystem::create_directory_symlink(gamePath, symlinkPath);
+                std::cout << clr::green << "Created folder for " << gameName << '\n';
             }
             else if (gameName != "invalid")
             {
-                std::cout << clr::gray << "Folder for this game already exists\n";
+                std::cout << clr::white << "Folder for this game already exists\n";
             }
             else
             {
@@ -67,19 +60,7 @@ void createSymlinks(std::filesystem::path& pfx, std::filesystem::path& create)
 
 int main()
 {
-    if (!std::filesystem::exists(std::filesystem::current_path().string() + "/games.json"))
-    {
-        system("echo '{}' > games.json");
-    }
-
-    if (!std::filesystem::exists(std::filesystem::current_path().string() + "/api.txt"))
-    {
-        std::cout << clr::red << "Enter your Steam API key: ";
-        std::string key{};
-        std::cin >> key;
-        std::string command{"echo '" + key + "' > api.txt"};
-        system(command.c_str());
-    }
+    setup();
 
     std::filesystem::path pfxC{"/home/marcos/.steam/steam/steamapps/compatdata"};
     std::filesystem::path pfxD{"/mnt/Games/SteamLibrary/steamapps/compatdata"};

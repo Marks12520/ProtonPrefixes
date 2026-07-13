@@ -124,13 +124,6 @@ int main(int argc, char* argv[])
 
     std::ifstream readJsonFile{"games.json"};
     auto jsonData = nlohmann::json::parse(readJsonFile);
-    std::filesystem::path create{jsonData["create"]};
-
-    if (jsonData["searchPaths"].empty())
-    {
-        std::cout << clr::red << "Program is not configured. Run './ProtonPrefixes setup'";
-        std::exit(0);
-    }
 
     if (argc >= 2 && std::string_view(argv[1]) == "setup")
     {
@@ -154,6 +147,14 @@ int main(int argc, char* argv[])
         setup();
         std::exit(0);
     }
+
+    if (jsonData["searchPaths"].empty())
+    {
+        std::cout << clr::red << "Program is not configured. Run './ProtonPrefixes setup'";
+        std::exit(0);
+    }
+
+    std::filesystem::path create{jsonData["create"]};
 
     if (argc == 2 && std::string_view(argv[1]) == "clean")
     {

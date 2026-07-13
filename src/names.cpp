@@ -25,6 +25,12 @@ std::string getNameFromAppID(unsigned long appID, std::filesystem::path& gamePat
         return jsonNames[appIDstr]["name"];
     }
 
+    if (appID == 0)
+    {
+        appName = "invalid";
+        return appName;
+    }
+
     auto response = cpr::Get(
         cpr::Url{url},
         cpr::Parameters{
